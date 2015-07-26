@@ -42,13 +42,15 @@ def run(fh, bot):
             except ValueError:
                 pass
 
-        execute_command(command, arguments)
+        result = execute_command(bot, command, arguments)
+        if result == 'exit':
+            return
         
         if fh == sys.stdin:
             print('> ', end='')
             sys.stdout.flush()
 
-def execute_command(command, arguments):
+def execute_command(bot, command, arguments):
     if command in commands:
         print(command)
         try:
@@ -72,7 +74,7 @@ def execute_command(command, arguments):
         route_fh = sys.stdin
         run(route_fh, bot)
     elif command == system_commands['exit']:
-        return
+        return 'exit'
     elif command == system_commands['commands']:
         print_commands()
     elif command == system_commands['routes']:
