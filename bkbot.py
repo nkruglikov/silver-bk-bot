@@ -37,10 +37,13 @@ class Engine:
     AUTHORIZATION_TIMEOUT = 1
     CLICK_BUTTON_TIMEOUT = 1
     CLICK_DIRECTION_BUTTON_TIMEOUT = 5
+    CLICK_INVENTORY_BUTTON_TIMEOUT = 1
     CLICK_LINK_TIMEOUT = 1
     CLICK_ITEM_TIMEOUT = 1
     CLICK_OBJECT_TIMEOUT = 1
     CLICK_ABILITY_TIMEOUT = 1
+    CLICK_POTION_TIMEOUT = 1
+    CLICK_PLUS_TIMEOUT = 1
 
 
     def __init__(self, silent=True):
@@ -104,10 +107,10 @@ class Engine:
                 direction_image = image
                 break
             
-        if image is None:
+        if direction_image is None:
             raise BotParsingError
         else:
-            image.click()
+            direction_image.click()
         time.sleep(self.CLICK_DIRECTION_BUTTON_TIMEOUT)
 
 
@@ -129,6 +132,25 @@ class Engine:
             
         except (ValueError, KeyError, AttributeError):
             raise BotParsingError
+
+
+    def click_inventory_button(self):
+        self.select_frame('bottom')
+        images = self.browser.find_elements_by_tag_name('img')
+        inventory_image = None
+        for image in images:
+            href = image.get_attribute('src')
+            if href.endswith('a___inv.gif'):
+                inventory_image = image
+                break
+            
+        if inventory_image is None:
+            self.select_frame('main')
+            raise BotParsingError
+        else:
+            inventory_image.click()
+            self.select_frame('main')
+        time.sleep(self.CLICK_INVENTORY_BUTTON_TIMEOUT)
 
 
     def click_item(self):
@@ -167,6 +189,32 @@ class Engine:
         except (ValueError, KeyError):
             raise BotParsingError
 
+
+    def click_plus(self):
+        try:
+            plus = self.browser.find_element_by_name('bar__comp')
+            plus.click()
+            time.sleep(self.CLICK_PLUS_TIMEOUT)
+            
+        except selenium.common.exceptions.NoSuchElementException:
+            raise BotParsingError
+        
+
+    def click_potion(self, name):
+        links = self.browser.find_elements_by_tag_name('a')
+        potion_link = None
+        for link in links:
+            onclick = link.get_attribute('onclick')
+            if link.text == 'исп-ть' and name in onclick:
+                potion_link = link
+                break
+            
+        if potion_link is None:
+            raise BotParsingError
+        else:
+            potion_link.click()
+        time.sleep(self.CLICK_POTION_TIMEOUT)
+        
     
     def get_hp(self):
         hp = self.browser.find_element_by_xpath('//*[@id="hp"]/div[2]/font/b')
@@ -209,11 +257,12 @@ class Engine:
         self.browser.save_screenshot(filename)
 
 
-    def select_main_frame(self):
+    def select_frame(self, name):
         try:
+            self.browser.switch_to_default_content()
             frames = self.browser.find_elements_by_tag_name('frame')
             main_frame = frames[[frame.get_attribute('name')
-                                 for frame in frames].index('main')]
+                                 for frame in frames].index(name)]
             self.browser.switch_to.frame(main_frame)
         except (ValueError, KeyError):
             raise BotParsingError        
@@ -224,7 +273,7 @@ class Bot:
     def __init__(self, username, password, engine):
         self.engine = engine
         self.engine.authorization(username, password)
-        self.engine.select_main_frame()
+        self.engine.select_frame('main')
 
 
     # A1. Получить задание
@@ -302,9 +351,12 @@ class Bot:
 
 
     # B6. Надеть комплект вещей
-    # Не реализовано!
-    def wear(name):
-        return NotImplemented
+    def wear(self, name):
+        self.engine.click_inventory_button()
+        self.engine.click_plus()
+        self.engine.click_link('Надеть "{}"'.format(name))
+        self.engine.click_plus()
+        self.engine.click_button('Вернуться')
 
 
     # B7. Ждать восстановления здоровья
@@ -317,10 +369,13 @@ class Bot:
             time.sleep(10)
 
 
-    # B8. Использовать эликсир/свиток
-    # Не реализовано!
-    def use_artefact(self, name):
-        return NotImplemented
+    # B8. Использовать эликсир
+    def use_potion(self, name):
+        self.engine.click_inventory_button()
+        self.engine.click_link('Эликсиры')
+        self.engine.click_potion(name)
+        self.engine.click_button('Да')
+        self.engine.click_button('Вернуться')
 
 
     # C1. Ударить
