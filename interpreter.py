@@ -42,13 +42,13 @@ def run(fh, bot):
             except ValueError:
                 pass
 
-        execute_command(command)
+        execute_command(command, arguments)
         
         if fh == sys.stdin:
             print('> ', end='')
             sys.stdout.flush()
 
-def execute_command(command):
+def execute_command(command, arguments):
     if command in commands:
         print(command)
         try:
