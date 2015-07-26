@@ -234,6 +234,7 @@ class Engine:
 
     def get_radio_buttons(self):
         attack_buttons = []
+        attack1_buttons = []
         defence_buttons = []
         
         inputs = self.browser.find_elements_by_tag_name('input')
@@ -241,10 +242,12 @@ class Engine:
             if button.get_attribute('type') == 'radio':
                 if button.get_attribute('name') == 'attack':
                     attack_buttons.append(button)
+                if button.get_attribute('name') == 'attack1':
+                    attack1_buttons.append(button)
                 if button.get_attribute('name') == 'defend':
                     defence_buttons.append(button)
 
-        return attack_buttons, defence_buttons
+        return attack_buttons, attack1_buttons, defence_buttons
 
 
     def screenshot(self, filename=None):
@@ -379,9 +382,11 @@ class Bot:
 
 
     # C1. Ударить
-    def punch(self, attack=0, defence=0):
-        attack_buttons, defence_buttons = self.engine.get_radio_buttons()
+    def punch(self, attack=0, attack1=0, defence=0):
+        attack_buttons, attack1_buttons, defence_buttons = \
+                        self.engine.get_radio_buttons()
         attack_buttons[attack].click()
+        attack1_buttons[attack1].click()
         defence_buttons[defence].click()
         self.engine.click_button('Вперед !!!')
 
@@ -399,14 +404,14 @@ class Bot:
 
 
     # C4. Провести бой
-    def combat(self, attack=0, defence=0, *numbers):
+    def combat(self, attack=0, attack1=0, defence=0, *numbers):
         self.attack()
         while True:
             try:
                 self.end_attack()
                 break
             except BotParsingError:
-                self.use_ability(numbers)
+                self.use_ability(*numbers)
                 self.punch(attack, defence)
 
 
