@@ -341,8 +341,13 @@ class Bot:
             for no, monster in enumerate(monsters, 1):
                 print("    {:2}. {}".format(no, monster.get_attribute('title')))
 
-            monsters[0].click()
-            self.engine.click_link('Напасть')
+            for monster in monsters:
+                try:
+                    monster.click()
+                    self.engine.click_link('Напасть')
+                    break
+                except selenium.common.exceptions.WebDriverException:
+                    continue
         else:
             print("Монстры не обнаружены!")
 
