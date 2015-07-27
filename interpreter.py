@@ -3,6 +3,7 @@ import bkbot
 import os
 import sys
 import configparser
+import time
 
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8-sig')
@@ -45,6 +46,8 @@ def run(fh, bot):
         result = execute_command(bot, command, arguments)
         if result == 'exit':
             return
+
+        time.sleep(float(config['TIMEOUTS']['COMMAND_TIMEOUT']))
         
         if fh == sys.stdin:
             print('> ', end='')

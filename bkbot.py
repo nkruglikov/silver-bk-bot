@@ -1,12 +1,16 @@
 import selenium
 import selenium.webdriver
 import time
+import configparser
 
 
 class BotError(Exception): pass
 class BotUsageError(BotError): pass
 class BotParsingError(BotError): pass
 
+config = configparser.ConfigParser()
+config.read('config.ini', encoding='utf-8-sig')
+TIMEOUTS = config['TIMEOUTS']
 
 class Engine:
 
@@ -34,19 +38,12 @@ class Engine:
         }
     
     URL = 'http://silver-bk.com'
-    AUTHORIZATION_TIMEOUT = 1
-    CLICK_BUTTON_TIMEOUT = 1
-    CLICK_DIRECTION_BUTTON_TIMEOUT = 5
-    CLICK_INVENTORY_BUTTON_TIMEOUT = 1
-    CLICK_LINK_TIMEOUT = 1
-    CLICK_ITEM_TIMEOUT = 1
-    CLICK_OBJECT_TIMEOUT = 1
-    CLICK_ABILITY_TIMEOUT = 1
-    CLICK_POTION_TIMEOUT = 1
-    CLICK_PLUS_TIMEOUT = 1
 
 
     def __init__(self, silent=True):
+        for name, timeout in TIMEOUTS.items():
+            exec('self.{} = {}'.format(name.upper(), timeout))
+
         if silent:
             self.browser = selenium.webdriver.PhantomJS('drivers\\'
                                                         'phantomjs.exe')
