@@ -253,6 +253,10 @@ class Engine:
         return attack_buttons, attack1_buttons, defence_buttons
 
 
+    def is_battle_now(self):
+        return 'нанесено урона' in self.browser.page_source
+
+
     def screenshot(self, filename=None):
         now = time.localtime()
         if filename is None:
@@ -319,9 +323,16 @@ class Bot:
 
 
     # B1. Перемещения и повороты
+    def move(self, direction):
+        if self.engine.is_battle_now():
+            self.combat()
+        self.collect()
+        self.engine.click_direction_button(direction)
+        
+    
     for direction in Engine.DIRECTIONS:
         exec('def move_{0}(self): '
-             'self.engine.click_direction_button("{0}")'.format(direction))
+             'self.move("{0}")'.format(direction))
     del direction
 
 
@@ -391,7 +402,7 @@ class Bot:
             if current_hp == max_hp:
                 break
             self.move_refresh()
-            time.sleep(10)
+            time.sleep(float(TIMEOUTS['REGENERATION_TIMEOUT']))
 
 
     # B8. Использовать эликсир
@@ -434,7 +445,7 @@ class Bot:
                 break
             except BotParsingError:
                 self.use_ability(*numbers)
-                self.punch(attack, defence)
+                self.punch(attack, attack1, defence)
 
 
     # D1. Ждать
