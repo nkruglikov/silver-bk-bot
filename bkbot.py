@@ -126,6 +126,7 @@ class Engine:
                     'portal.php?go={}'.format(cavern_id)):
                     cavern_link = link
             cavern_link.click()
+            time.sleep(self.CLICK_CAVERN_TIMEOUT)
             
         except (ValueError, KeyError, AttributeError):
             raise BotParsingError
