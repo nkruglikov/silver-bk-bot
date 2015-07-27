@@ -219,8 +219,13 @@ class Engine:
     def get_hp(self):
         hp = self.browser.find_element_by_xpath('//*[@id="hp"]/div[2]/font/b')
         return tuple(map(int, hp.text.split('/')))
-        
 
+
+    def get_links(self, text):
+        links = self.browser.find_elements_by_tag_name('a')
+        return list(filter(lambda x: text in x.text, links))
+    
+    
     def get_monsters(self):
         images = self.browser.find_elements_by_tag_name('img')
         monsters = []
@@ -353,9 +358,23 @@ class Bot:
 
 
     # B5. Разговор с НПЦ
-    # Не реализовано!
-    def talk(self):
-        return NotImplemented
+    def talk(self, name):
+        monsters = self.engine.get_monsters()
+        if len(monsters) > 0:
+            print("Обнаружены монстры:")
+            for no, monster in enumerate(monsters, 1):
+                print("    {:2}. {}".format(no, monster.get_attribute('title')))
+
+            for monster in monsters:
+                try:
+                    if name in monster.get_attribute('title'):
+                        monster.click()
+                        self.engine.click_link('Говорить')
+                        break
+                except selenium.common.exceptions.WebDriverException:
+                    continue
+        else:
+            print("Монстры не обнаружены!")
 
 
     # B6. Надеть комплект вещей
@@ -423,3 +442,13 @@ class Bot:
     # D1. Ждать
     def wait(self, seconds):
         time.sleep(seconds)
+
+
+    # D2. Сказать
+    def say(self, phrase):
+        links = self.engine.get_links(phrase)
+        if len(links) > 1:
+            raise BotUsageError("Подходит больше одной фразы!")
+        if len(links) == 0:
+            raise BotUsageError("Не подходит ни одной фразы!")
+        links[0].click()
