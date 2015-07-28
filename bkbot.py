@@ -302,7 +302,7 @@ class Bot:
 
     # A2. Завершить задание
     # Не протестировано!
-    def end_task(self):
+    def end_task(self, cavern_name):
         self.engine.click_cavern(cavern_name)
          
         try:
