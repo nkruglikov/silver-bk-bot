@@ -257,6 +257,10 @@ class Engine:
         return 'нанесено урона' in self.browser.page_source
 
 
+    def is_sufficient_items(self):
+        return 'достаточно этих предметов' in self.browser.page_source
+
+
     def screenshot(self, filename=None):
         now = time.localtime()
         if filename is None:
@@ -339,7 +343,8 @@ class Bot:
     # B2. Поднять предметы
     def collect(self):
         while self.engine.click_item():
-            pass
+            if self.engine.is_sufficient_items():
+                break
 
 
     # B3. Использовать объект
