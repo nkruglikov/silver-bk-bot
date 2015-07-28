@@ -466,3 +466,12 @@ class Bot:
         if len(links) == 0:
             raise BotUsageError("Не подходит ни одной фразы!")
         links[0].click()
+
+
+    # D3. Выйти из пещеры
+    def escape(self):
+        self.engine.click_link(' Выйти')
+        alert = self.engine.browser.switch_to_alert()
+        alert.accept()
+        time.sleep(2)
+        self.engine.click_link('Портал воспоминаний')
